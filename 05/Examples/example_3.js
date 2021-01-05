@@ -1125,7 +1125,70 @@ function filter(array, test) {
     }
     return passed;
 }
-//console.log(filter(SCRIPTS, script => script.living));
+console.log(filter(SCRIPTS, script => script.living));
 // → [{name: "Adlam", ...}, ...]
 // Same as:
-//console.log(SCRIPTS.filter(s => s.living == true));
+console.log(SCRIPTS.filter(s => s.living));
+
+function map(array, transform) {
+    let mapped = [];
+    for (let element of array) {
+        mapped.push(transform(element));
+    }
+    return mapped;
+}
+
+let rtlScripts = SCRIPTS.filter(s => s.direction == "rtl");
+console.log(map(rtlScripts, s => s.name));
+// → ["Adlam", "Arabic", "Imperial Aramaic", …]
+
+function reduce(array, combine, start) {
+    let current = start;
+    for (let element of array) {
+        current = combine(current, element);
+    }
+    return current;
+}
+console.log(reduce([1, 2, 3, 4], (a, b) => a + b, 0));
+// → 10
+
+/*
+To use reduce (twice) to find the script with the most characters,
+we can write something like this:
+*/
+function characterCount(script) {
+    return script.ranges.reduce((count, [from, to]) => {
+        return count + (to - from);
+    }, 0);
+}
+
+console.log(SCRIPTS.reduce((a, b) => {
+    return characterCount(a) < characterCount(b) ? b : a;
+}));
+
+// Composability
+let biggest = null;
+for (let script of SCRIPT) {
+    if (biggest == null ||
+        characterCount(biggest) < characterCount(script)) {
+            biggest = script;
+    }
+}
+
+
+/*
+Higher-order functions start to shine when you need to compose
+operations. As an example, let's write code that finds the average
+year of origin for living and dead scripts in the data set.
+*/
+function average(array) {
+    return array.reduce((a, b) => a + b) / array.length;
+}
+
+console.log(Math.round(average(
+    SCRIPTS.filter(s => s.living).map(s => s.year))));
+// → 1165
+
+console.log(Math.round(average(
+    SCRIPTS.filter(s => !s.living).map(s => s.year))));
+// → 204
